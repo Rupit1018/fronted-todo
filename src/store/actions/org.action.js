@@ -2,7 +2,7 @@ import { createAsyncThunk } from "@reduxjs/toolkit";
 import API from "../../libs/axios";
 
 export const getOrgsAction = createAsyncThunk(
-  "org/getOrgs",
+  "organization/getOrganization",
   async (_, thunkAPI) => {
     try {
       const response = await API.get("/org/getorg");
@@ -21,7 +21,7 @@ export const getOrgsAction = createAsyncThunk(
 );
 
 export const createOrgAction = createAsyncThunk(
-  "org/createOrg",
+  "organization/createOrganization",
   async (orgData, thunkAPI) => {
     try {
       const response = await API.post("/org/createorg", orgData);
@@ -43,7 +43,7 @@ export const createOrgAction = createAsyncThunk(
 );
 
 export const deleteOrgAction = createAsyncThunk(
-  "org/deleteOrg",
+  "organization/deleteOrganization",
   async (orgId, thunkAPI) => {
     try {
       const response = await API.delete(`/org/deleteorg/${orgId}`);
@@ -65,7 +65,7 @@ export const deleteOrgAction = createAsyncThunk(
 );
 
 export const updateOrgAction = createAsyncThunk(
-  "org/updateOrg",
+  "organization/updateOrgName",
   async ({ orgId, orgData }, thunkAPI) => {
     try {
       const response = await API.put(`/org/updateorg/${orgId}`, orgData);
@@ -85,22 +85,20 @@ export const updateOrgAction = createAsyncThunk(
     }
   }
 );
-
-export const createGroupAction = createAsyncThunk(
-  "org/createGroup",
-  async ({ email, orgId }, thunkAPI) => {
+export const inviteUserAction = createAsyncThunk(
+  "organization/inviteUser",
+  async ({ email, orgId, role }, thunkAPI) => {
     try {
       const token = localStorage.getItem("access_token");
       const response = await API.post(
-        "/invitations",
-        { orgId, email },
+        `/invitations/send/${orgId}`,
+        { email, role }, // only email + role in body
         {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { Authorization: `Bearer ${token}` },
           withCredentials: true,
         }
       );
+      console.log(response.data);
       return response.data;
     } catch (error) {
       return thunkAPI.rejectWithValue(
@@ -110,29 +108,36 @@ export const createGroupAction = createAsyncThunk(
   }
 );
 export const getInvitationsAction = createAsyncThunk(
-  "org/getInvitations",
+  "organization/getInvitations",
+  async (orgId, thunkAPI) => {
+    if (!orgId) return thunkAPI.rejectWithValue({ message: "Invalid orgId" });
+    try {
+      const response = await API.get(`/invitations/org/${orgId}`);
+      return response.data;
+    } catch (error) {
+      return thunkAPI.rejectWithValue(
+        error?.response?.data || { message: "Something went wrong" }
+      );
+    }
+  }
+);
+
+export const getInvitationAction = createAsyncThunk(
+  "organization/getInvitation",
   async (_, thunkAPI) => {
     try {
       const response = await API.get("/invitations");
-      console.log(" Get Invitations success response:", response);
       return response.data;
     } catch (error) {
-      console.error(
-        " Get Invitations error:",
-        error?.response?.data || error.message
-      );
       return thunkAPI.rejectWithValue(
-        error?.response?.data || {
-          message: "Something went wrong",
-          status: 500,
-        }
+        error?.response?.data || { message: "Something went wrong" }
       );
     }
   }
 );
 
 export const cancelInvitationAction = createAsyncThunk(
-  "org/cancelInvitation",
+  "organization/cancelInvitation",
   async (invitationId, thunkAPI) => {
     try {
       const response = await API.patch(`/invitations/${invitationId}/cancel`);
@@ -153,26 +158,20 @@ export const cancelInvitationAction = createAsyncThunk(
   }
 );
 export const acceptInvitationAction = createAsyncThunk(
-  "org/acceptInvitation",
-  async (invId, thunkAPI) => {
+  "organization/acceptInvitation",
+  async (invitationId, thunkAPI) => {
     try {
-      const token = localStorage.getItem("access_token");
-      const response = await API.patch(`/invitations/${invId}/accept`, null, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      return response.data;
+      await API.patch(`/invitations/${invitationId}/accept`);
+      return invitationId;
     } catch (error) {
       return thunkAPI.rejectWithValue(
-        error.response?.data || { message: "Something went wrong", status: 500 }
+        error?.response?.data || { message: "Something went wrong" }
       );
     }
   }
 );
-
 export const declineInvitationAction = createAsyncThunk(
-  "org/declineInvitation",
+  "organization/declineInvitation",
   async (invitationId, thunkAPI) => {
     try {
       const response = await API.post(`/invitations/decline/${invitationId}`);

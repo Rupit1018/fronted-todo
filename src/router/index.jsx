@@ -9,7 +9,7 @@ import TodoPage from "../pages/todo/TodoPage";
 import UserProfilePage from "../pages/user/UserProfilePage";
 import FogotPasswordPage from "../pages/auth/FogotPasswordPage";
 import ResetPasswordPage from "../pages/auth/ResetPasswordPage";
-import CreateGroupPage from "../pages/org/CreateGroupPage";
+import AccountPage from "../pages/user/AccountPage";
 
 const router = createBrowserRouter([
   {
@@ -29,7 +29,7 @@ const router = createBrowserRouter([
       { path: "/org", element: <OrgPage /> },
       { path: "/todo", element: <TodoPage /> },
       { path: "/profile", element: <UserProfilePage /> },
-     { path: "/creategroup/:orgId", element: <CreateGroupPage /> }
+      {path: "/account", element: <AccountPage />},
     ],
   },
 ]);

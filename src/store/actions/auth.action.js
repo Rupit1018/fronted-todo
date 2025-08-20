@@ -67,7 +67,7 @@ export const logoutAction = createAsyncThunk(
 );
 
 export const forgotPasswordAction = createAsyncThunk(
-  "auth/forgotPassword",
+  "auth/forgot-Password",
   async (email, thunkAPI) => {
     try {
       const response = await API.post("/auth/forgot-password", { email });
@@ -82,12 +82,27 @@ export const forgotPasswordAction = createAsyncThunk(
 );
 
 export const resetPasswordAction = createAsyncThunk(
-  "auth/resetPassword",
+  "auth/reset-Password",
   async ({ token, password }, thunkAPI) => {
     try {
       const response = await API.post(`/auth/reset-password?token=${token}`, {
         password,
       });
+      return thunkAPI.fulfillWithValue(response?.data);
+    } catch (error) {
+      return thunkAPI.rejectWithValue({
+        message: error?.response?.data?.message || "Something is wrong here",
+        status: error?.response?.status || 500,
+      });
+    }
+  }
+);
+
+export const getUserAction = createAsyncThunk(
+  "auth/getUser",
+  async (_, thunkAPI) => {
+    try {
+      const response = await API.get("/auth/me");
       return thunkAPI.fulfillWithValue(response?.data);
     } catch (error) {
       return thunkAPI.rejectWithValue({

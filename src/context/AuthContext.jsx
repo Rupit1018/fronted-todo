@@ -10,6 +10,7 @@ export function  useAuth() {
 export function AuthProvider({ children }) {
   const [authUser, setAuthUser] = useState(null);
   const [loading, setLoading] = useState(true);
+   const [orgRole, setOrgRole] = useState(localStorage.getItem("orgRole") || "viewer");
 
   useEffect(() => {
     const userData = localStorage.getItem("user");
@@ -25,7 +26,7 @@ export function AuthProvider({ children }) {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ authUser, setAuthUser, loading }}>
+    <AuthContext.Provider value={{ authUser, setAuthUser, loading ,orgRole, setOrgRole}}>
       {children}
     </AuthContext.Provider>
   );

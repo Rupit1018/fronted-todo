@@ -8,6 +8,8 @@ import {
   IconButton,
   Collapse,
   Alert,
+  useMediaQuery,
+  useTheme,
 } from "@mui/material";
 import PersonIcon from "@mui/icons-material/Person";
 import EmailIcon from "@mui/icons-material/Email";
@@ -20,6 +22,8 @@ import useAuthentication from "../../hooks/useAuthentication";
 const Signup = () => {
   const { signup } = useAuthentication();
   const fileInputRef = useRef();
+  const theme = useTheme();
+  const isSmall = useMediaQuery(theme.breakpoints.down("sm"));
 
   const [formData, setFormData] = useState({
     name: "",
@@ -27,6 +31,11 @@ const Signup = () => {
     password: "",
   });
 
+    const [errors, setErrors] = useState({
+      name: "",
+      email: "",
+      password: "",
+    });
   const [profilePic, setProfilePic] = useState(null);
   const [alertOpen, setAlertOpen] = useState(false);
   const [alertMessage, setAlertMessage] = useState("");
@@ -34,15 +43,34 @@ const Signup = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+     const newErrors = { name: "",email: "", password: "" };
+    let hasError = false;
+
+      if (!formData.name.trim()) {
+      newErrors.name = "name is required";
+      hasError = true;
+    }
+    if (!formData.email.trim()) {
+      newErrors.email = "Email is required";
+      hasError = true;
+    }
+    if (!formData.password.trim()) {
+      newErrors.password = "Password is required";
+      hasError = true;
+    }
+    
+    setErrors(newErrors);
+
+    if (hasError) {
+      return; // stop here if validation fails
+    }
 
     try {
       const data = new FormData();
       data.append("name", formData.name);
       data.append("email", formData.email);
       data.append("password", formData.password);
-      if (profilePic) {
-        data.append("profilepic", profilePic);
-      }
+      if (profilePic) data.append("profilepic", profilePic);
 
       await signup(data);
 
@@ -62,9 +90,7 @@ const Signup = () => {
 
   useEffect(() => {
     if (alertOpen) {
-      const timer = setTimeout(() => {
-        setAlertOpen(false);
-      }, 3000);
+      const timer = setTimeout(() => setAlertOpen(false), 3000);
       return () => clearTimeout(timer);
     }
   }, [alertOpen]);
@@ -79,20 +105,23 @@ const Signup = () => {
         justifyContent: "center",
         alignItems: "center",
         px: 2,
+        py: isSmall ? 4 : 0,
+        overflowY: isSmall ? "auto" : "hidden",
       }}
     >
       <Box
         sx={{
           backgroundColor: "#1e293b",
           border: "1px solid #00bfa5",
-          padding: 4,
+          padding: isSmall ? 3 : 4,
           borderRadius: 3,
-          width: 360,
+          width: "100%",
+          maxWidth: 360,
           boxShadow: 4,
         }}
       >
         <Typography
-          variant="h5"
+          variant={isSmall ? "h6" : "h5"}
           align="center"
           color="white"
           fontWeight="bold"
@@ -101,7 +130,6 @@ const Signup = () => {
           Signup Form
         </Typography>
 
-        {/* MUI Alert with Collapse */}
         <Collapse in={alertOpen}>
           <Alert
             severity={alertSeverity}
@@ -130,6 +158,15 @@ const Signup = () => {
               setFormData({ ...formData, name: e.target.value })
             }
             margin="normal"
+            helperText={errors.name ? errors.name : ""}
+            FormHelperTextProps={{
+              sx: {
+                fontSize: "0.9rem",
+                color: "#f03800ff",
+                marginLeft: 0,
+                marginTop: "4px",
+              },
+            }}
             InputProps={{
               startAdornment: (
                 <InputAdornment position="start">
@@ -153,6 +190,15 @@ const Signup = () => {
             placeholder="Email"
             type="email"
             value={formData.email}
+            helperText={errors.email ? errors.email : ""}
+            FormHelperTextProps={{
+              sx: {
+                fontSize: "0.9rem",
+                color: "#f03800ff",
+                marginLeft: 0,
+                marginTop: "4px",
+              },
+            }}
             onChange={(e) =>
               setFormData({ ...formData, email: e.target.value })
             }
@@ -180,6 +226,15 @@ const Signup = () => {
             placeholder="Password"
             type="password"
             value={formData.password}
+            helperText={errors.password ? errors.password : ""}
+            FormHelperTextProps={{
+              sx: {
+                fontSize: "0.9rem",
+                color: "#f03800ff",
+                marginLeft: 0,
+                marginTop: "4px",
+              },
+            }}
             onChange={(e) =>
               setFormData({ ...formData, password: e.target.value })
             }
@@ -209,6 +264,7 @@ const Signup = () => {
               alignItems: "center",
               justifyContent: "space-between",
               gap: 2,
+              flexDirection: isSmall ? "column" : "row",
             }}
           >
             <Button

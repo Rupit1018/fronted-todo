@@ -7,6 +7,7 @@ import {
   InputAdornment,
   Alert,
   IconButton,
+  useMediaQuery,
 } from "@mui/material";
 import EmailIcon from "@mui/icons-material/Email";
 import CloseIcon from "@mui/icons-material/Close";
@@ -24,6 +25,7 @@ const ForgotPassword = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { ForgotPassword } = useAuthentication();
+  const isMobile = useMediaQuery("(max-width:500px)");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -35,19 +37,19 @@ const ForgotPassword = () => {
       console.log("ForgotPassword Result:", result);
 
       if (forgotPasswordAction.fulfilled.match(result)) {
-  setAlertData({
-    show: true,
-    message: result.payload?.message || "Reset link sent successfully!",
-    severity: "success",
-  });
-  setEmail("");
-} else {
-  setAlertData({
-    show: true,
-    message: result?.payload?.message || "Unexpected error occurred!",
-    severity: "error",
-  });
-}
+        setAlertData({
+          show: true,
+          message: result.payload?.message || "Reset link sent successfully!",
+          severity: "success",
+        });
+        setEmail("");
+      } else {
+        setAlertData({
+          show: true,
+          message: result?.payload?.message || "Unexpected error occurred!",
+          severity: "error",
+        });
+      }
     } finally {
       setLoading(false);
     }
@@ -62,16 +64,17 @@ const ForgotPassword = () => {
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
-        overflow: "hidden",
+        px: 2,
       }}
     >
       <Box
         sx={{
           backgroundColor: "#1e293b",
           border: "1px solid #00bfa5",
-          padding: 4,
+          padding: isMobile ? 3 : 4,
           borderRadius: 3,
-          width: 340,
+          width: isMobile ? "100%" : 340,
+          maxWidth: "100%",
           boxShadow: "0 4px 20px rgba(0,0,0,0.4)",
         }}
       >
@@ -95,7 +98,7 @@ const ForgotPassword = () => {
         )}
 
         <Typography
-          variant="h5"
+          variant={isMobile ? "h6" : "h5"}
           align="center"
           color="white"
           fontWeight="bold"

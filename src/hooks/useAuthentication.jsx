@@ -1,12 +1,34 @@
 import { useDispatch } from "react-redux";
-import { forgotPasswordAction, loginAction, logoutAction, signUpAction } from "../store/actions/auth.action";
+import {
+  forgotPasswordAction,
+  getUserAction,
+  loginAction,
+  logoutAction,
+  signUpAction,
+} from "../store/actions/auth.action";
 import { useAuth } from "../context/AuthContext";
-import { acceptInvitationAction, cancelInvitationAction, createGroupAction, createOrgAction, deleteOrgAction, getInvitationsAction, getOrgsAction, updateOrgAction } from "../store/actions/org.action";
-import { createTodoAction, deleteTodoAction, getTodosAction, updateTodoAction } from "../store/actions/todo.action";
+import {
+  acceptInvitationAction,
+  cancelInvitationAction,
+  createOrgAction,
+  deleteOrgAction,
+  getInvitationsAction,
+  getOrgsAction,
+  updateOrgAction,
+  inviteUserAction,
+  getInvitationAction
+} from "../store/actions/org.action";
+import {
+  createTodoAction,
+  deleteTodoAction,
+  getTodosAction,
+  updateTodoAction,
+} from "../store/actions/todo.action";
+import { getOrgDetailsAction, updateMemberRoleAction } from "../store/actions/user.action";
 
-const useAuthentication = () => { 
+const useAuthentication = () => {
   const dispatch = useDispatch();
-   const { setAuthUser } = useAuth();
+  const { setAuthUser } = useAuth();
 
   const login = async (body) => {
     return dispatch(loginAction(body));
@@ -18,69 +40,90 @@ const useAuthentication = () => {
 
   const logout = async () => {
     await dispatch(logoutAction());
-    setAuthUser(null); 
+    setAuthUser(null);
   };
 
-  const ForgotPassword=async(email)=>{
-   return dispatch(forgotPasswordAction(email))
-  }
+  const ForgotPassword = async (email) => {
+    return dispatch(forgotPasswordAction(email));
+  };
 
-  
+    const authMe= async () => {
+      return dispatch(getUserAction())
+    }
 
   // Orgs
 
   const getOrgs = async (arg) => {
     return dispatch(getOrgsAction(arg));
-  }
+  };
 
-  const createOrg= async (orgData) => {
+  const createOrg = async (orgData) => {
     return dispatch(createOrgAction(orgData));
-  }
-  
+  };
+
   const deleteOrg = async (orgId) => {
     return dispatch(deleteOrgAction(orgId));
-  }
+  };
 
   const updateOrg = async ({ orgId, orgData }) => {
     return dispatch(updateOrgAction({ orgId, orgData }));
-  }
+  };
 
   // groups
 
-   const createGroup = async (groupData) => {
-    return dispatch(createGroupAction(groupData));
+  const inviteAction = async (groupData) => {
+    return dispatch(inviteUserAction(groupData));
   };
 
-const getGroups = () => {
-  return dispatch(getInvitationsAction()).unwrap();
+ const getGroups = (orgId) => {
+  return dispatch(getInvitationsAction(orgId)).unwrap();
 };
 
- const acceptInvitation = async (invId) => {
-  return dispatch(acceptInvitationAction(invId));
-};
+const getInvitation = async () => {
+    return dispatch(getInvitationAction());
+  }
+  const acceptInvitation = async (invId) => {
+    return dispatch(acceptInvitationAction(invId));
+  };
 
   const cancelInvitation = async (inviteId) => {
     return dispatch(cancelInvitationAction(inviteId));
-  }
+  };
 
   // Todo
 
   const craeateTodo = async (todoData) => {
     return dispatch(createTodoAction(todoData));
-  }
+  };
 
   const getTodos = async (orgId) => {
     return dispatch(getTodosAction(orgId));
-  }
+  };
 
-const deleteTodo = async ({ todoId, orgId }) => {
-  return dispatch(deleteTodoAction({ todoId, orgId }));
+  const deleteTodo = async ({ todoId, orgId }) => {
+    return dispatch(deleteTodoAction({ todoId, orgId }));
+  };
+
+  const updateTodo = async ({ todoId, orgId, todoData }) => {
+    return dispatch(updateTodoAction({ todoId, orgId, todoData }));
+  };
+
+
+
+  // Org Members
+  
+  const updateMemberRole = async ({ orgId, memberId, role }) => {
+    return dispatch(updateMemberRoleAction({ orgId, memberId, role }));
+  };
+
+const getOrgDetails = async (orgId) => {
+  return dispatch(getOrgDetailsAction(orgId)); // orgId must be organizationId
 };
 
-const updateTodo = async ({ todoId, orgId, todoData }) => {
-  return dispatch(updateTodoAction({ todoId, orgId, todoData }));
-}
   return {
+    authMe,
+    updateMemberRole,
+    getOrgDetails,
     login,
     signup,
     logout,
@@ -93,11 +136,11 @@ const updateTodo = async ({ todoId, orgId, todoData }) => {
     getTodos,
     deleteTodo,
     updateTodo,
-    createGroup,
+    inviteAction,
     getGroups,
     acceptInvitation,
-    cancelInvitation
-    
+    cancelInvitation,
+    getInvitation
   };
 };
 

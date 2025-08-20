@@ -7,6 +7,7 @@ import {
   InputAdornment,
   Alert,
   IconButton,
+  CircularProgress,
 } from "@mui/material";
 import EmailIcon from "@mui/icons-material/Email";
 import LockIcon from "@mui/icons-material/Lock";
@@ -21,11 +22,16 @@ const Login = () => {
   const navigate = useNavigate();
   const { setAuthUser } = useAuth();
   const { login } = useAuthentication();
+
+  const [loading, setLoading] = useState(false);
   const [formData, setformData] = useState({
     email: "",
     password: "",
   });
-
+  const [errors, setErrors] = useState({
+    email: "",
+    password: "",
+  });
   const [alert, setAlert] = useState({
     show: false,
     message: "",
@@ -34,43 +40,76 @@ const Login = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const result = await login(formData);
-    console.log("Login result:", result);
+    const newErrors = { email: "", password: "" };
+    let hasError = false;
 
-    if (result?.type !== loginAction.rejected.type) {
-      const user = result?.payload?.user;
-      const token = result?.payload?.token;
+    if (!formData.email.trim()) {
+      newErrors.email = "Email is required";
+      hasError = true;
+    }
+    if (!formData.password.trim()) {
+      newErrors.password = "Password is required";
+      hasError = true;
+    }
 
-      if (user && token) {
-        setAuthUser(user);
-        Storage.setItem("user", user);
-        Storage.setItem("access_token", token);
+    setErrors(newErrors);
 
-        console.log(" Login success:", result.payload);
-        console.log("Token saved:", token);
-        setformData({ email: "", password: "" });
-        setAlert({
-          show: true,
-          message: "Login successful!",
-          severity: "success",
-        });
+    if (hasError) return;
 
-        // Navigate with slight delay so alert is visible briefly
-        setTimeout(() => navigate("/home"), 0);
+    setLoading(true);
+    console.log("Loading set to true");
+
+    try {
+      // Simulate 3 seconds loading spinner regardless of login speed
+      const loginPromise = login(formData);
+      const delayPromise = new Promise((r) => setTimeout(r, 3000));
+
+      // Wait for both login and delay to finish
+      const [result] = await Promise.all([loginPromise, delayPromise]);
+
+      console.log("Login result:", result);
+
+      if (result?.type !== loginAction.rejected.type) {
+        const user = result?.payload?.user;
+        const token = result?.payload?.token;
+
+        if (user && token) {
+          setAuthUser(user);
+          Storage.setItem("user", user);
+          Storage.setItem("access_token", token);
+
+          setformData({ email: "", password: "" });
+          setAlert({
+            show: true,
+            message: "Login successful!",
+            severity: "success",
+          });
+          
+          navigate("/home");
+        } else {
+          setAlert({
+            show: true,
+            message: "User or token missing in response.",
+            severity: "error",
+          });
+        }
       } else {
+        const msg = result?.payload?.message || "Login failed!";
         setAlert({
           show: true,
-          message: "User or token missing in response.",
+          message: msg,
           severity: "error",
         });
       }
-    } else {
-      const msg = result?.payload?.message || "Login failed!";
+    } catch (error) {
       setAlert({
         show: true,
-        message: msg,
+        message: "Unexpected error occurred.",
         severity: "error",
       });
+    } finally {
+      setLoading(false);
+      console.log("Loading set to false");
     }
   };
 
@@ -83,16 +122,18 @@ const Login = () => {
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
-        overflow: "hidden",
+        overflowY: "auto",
+        p: { xs: 2, sm: 3 },
       }}
     >
       <Box
         sx={{
           backgroundColor: "#1e293b",
           border: "1px solid #00bfa5",
-          padding: 4,
+          padding: { xs: 3, sm: 4 },
           borderRadius: 3,
-          width: 340,
+          width: { xs: "100%", sm: 340 },
+          maxWidth: "100%",
           boxShadow: "0 4px 20px rgba(0,0,0,0.4)",
         }}
       >
@@ -121,6 +162,7 @@ const Login = () => {
           color="white"
           fontWeight="bold"
           mb={3}
+          sx={{ fontSize: { xs: "1.25rem", sm: "1.5rem" } }}
         >
           Login Form
         </Typography>
@@ -132,10 +174,17 @@ const Login = () => {
             name="email"
             type="email"
             value={formData.email}
-            onChange={(e) =>
-              setformData({ ...formData, email: e.target.value })
-            }
+            onChange={(e) => setformData({ ...formData, email: e.target.value })}
             margin="normal"
+            helperText={errors.email ? errors.email : ""}
+            FormHelperTextProps={{
+              sx: {
+                fontSize: "0.9rem",
+                color: "#f03800ff",
+                marginLeft: 0,
+                marginTop: "4px",
+              },
+            }}
             InputProps={{
               startAdornment: (
                 <InputAdornment position="start">
@@ -164,6 +213,15 @@ const Login = () => {
               setformData({ ...formData, password: e.target.value })
             }
             margin="normal"
+            helperText={errors.password ? errors.password : ""}
+            FormHelperTextProps={{
+              sx: {
+                fontSize: "0.9rem",
+                color: "#f03800ff",
+                marginLeft: 0,
+                marginTop: "4px",
+              },
+            }}
             InputProps={{
               startAdornment: (
                 <InputAdornment position="start">
@@ -199,6 +257,7 @@ const Login = () => {
             fullWidth
             type="submit"
             variant="contained"
+            disabled={loading}
             sx={{
               mt: 3,
               backgroundColor: "#00bfa5",
@@ -207,16 +266,21 @@ const Login = () => {
               "&:hover": {
                 backgroundColor: "#00a38f",
               },
+              py: { xs: 1.2, sm: 1.5 },
             }}
           >
-            Login
+            {loading ? <CircularProgress size={24} sx={{color:"#00bfa5"}} /> : "Login"}
           </Button>
         </form>
 
         <Typography
           variant="body2"
           align="center"
-          sx={{ color: "#cbd5e1", mt: 3 }}
+          sx={{
+            color: "#cbd5e1",
+            mt: 3,
+            fontSize: { xs: "0.85rem", sm: "0.875rem" },
+          }}
         >
           Don't have an account?{" "}
           <Link to="/signup" style={{ color: "#00bfa5", fontWeight: "bold" }}>

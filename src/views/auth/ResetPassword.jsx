@@ -29,46 +29,45 @@ const ResetPassword = () => {
   const query = new URLSearchParams(location.search);
   const token = query.get("token");
 
- const handleSubmit = async (e) => {
-  e.preventDefault();
-  if (password !== confirm) {
-    setAlertData({
-      show: true,
-      message: "Passwords do not match.",
-      severity: "error",
-    });
-    return;
-  }
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (password !== confirm) {
+      setAlertData({
+        show: true,
+        message: "Passwords do not match.",
+        severity: "error",
+      });
+      return;
+    }
 
-  setLoading(true);
-  setAlertData({ show: false, message: "", severity: "success" });
+    setLoading(true);
+    setAlertData({ show: false, message: "", severity: "success" });
 
-  try {
-    const { data } = await axios.post(
-      `http://localhost:5000/auth/reset-password?token=${token}`,
-      { password }
-    );
+    try {
+      const { data } = await axios.post(
+        `http://localhost:5000/auth/reset-password?token=${token}`,
+        { password }
+      );
 
-    setAlertData({
-      show: true,
-      message: data.message || "Password reset successful!",
-      severity: "success",
-    });
+      setAlertData({
+        show: true,
+        message: data.message || "Password reset successful!",
+        severity: "success",
+      });
 
-    setTimeout(() => {
-      navigate("/login");
-    }, 1500);
-  } catch (error) {
-    setAlertData({
-      show: true,
-      message: error.response?.data?.message || "Reset failed.",
-      severity: "error",
-    });
-  } finally {
-    setLoading(false);
-  }
-};
-
+      setTimeout(() => {
+        navigate("/login");
+      }, 1500);
+    } catch (error) {
+      setAlertData({
+        show: true,
+        message: error.response?.data?.message || "Reset failed.",
+        severity: "error",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <Box
@@ -80,15 +79,17 @@ const ResetPassword = () => {
         justifyContent: "center",
         alignItems: "center",
         overflow: "hidden",
+        px: 2, // padding for small screens
       }}
     >
       <Box
         sx={{
           backgroundColor: "#1e293b",
           border: "1px solid #00bfa5",
-          padding: 4,
+          p: { xs: 3, sm: 4 }, // responsive padding
           borderRadius: 3,
-          width: 340,
+          width: { xs: "100%", sm: 340 }, // full width on mobile, fixed on desktop
+          maxWidth: "400px",
           boxShadow: "0 4px 20px rgba(0,0,0,0.4)",
         }}
       >

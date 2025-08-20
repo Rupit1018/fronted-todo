@@ -1,5 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 import {
+  getUserAction,
   loginAction,
   logoutAction,
   signUpAction,
@@ -31,6 +32,18 @@ const authSlice = createSlice({
     },
   },
   extraReducers: (builder) => {
+    builder
+      .addCase(getUserAction.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(getUserAction.fulfilled, (state, action) => {
+        state.loading = false;
+        state.user = action.payload; // 👈 Ahiya user save karvo
+      })
+      .addCase(getUserAction.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload?.message;
+      });
     builder.addCase(signUpAction.pending, (state) => {
       state.apiName = "signup";
       state.loading = "signup";
